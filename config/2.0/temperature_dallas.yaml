@@ -1,3 +1,6 @@
+substitutions:
+  temperature_pin: GPIO32
+
 dallas:
   pin: ${temperature_pin}
   update_interval: 5s

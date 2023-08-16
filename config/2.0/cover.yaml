@@ -1,3 +1,9 @@
+substitutions:
+  endstop_current: "120" #Sets the current threshold in mA that turns the endstops on
+  cover_open_pin: GPIO19
+  cover_close_pin: GPIO18
+  cover_current_pin: GPIO36
+
 output:
   - platform: gpio
     pin: ${cover_close_pin}

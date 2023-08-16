@@ -1,3 +1,8 @@
+substitutions:
+  button_pin: GPIO21
+  rotary_pin_a: GPIO23
+  rotary_pin_b: GPIO22
+
 sensor:
   - platform: rotary_encoder
     name: "Rotary Encoder"

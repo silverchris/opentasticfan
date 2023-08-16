@@ -1,3 +1,7 @@
+substitutions:
+  i2c_sda_pin: GPIO25
+  i2c_scl_pin: GPIO26
+
 external_components:
   - source: github://pr#4105
     components:

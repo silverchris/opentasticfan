@@ -28,42 +28,33 @@ api:
 ota:
   password: ""
 
+substitutions:
+  #   temperature_sensor: remote_temperature
+  endstop_current: "120" #Sets the current threshold in mA that turns the endstops on. May need to be adjusted for different cover motors
+  rain_threshold: "300" #Sets the touch threshold for rain detection. This may need to be tweeked depending on your wiring.
+
 packages:
-  display: !include
-    file: display.yaml
-    vars:
-      i2c_sda_pin: GPIO25
-      i2c_scl_pin: GPIO26
-  dallas: !include
-    file: temperature_dallas.yaml
-    vars:
-      temperature_pin: GPIO32
-  climate: !include
-    file: climate.yaml
-    vars:
-      motor_enable_pin: GPIO16
-      motor_forward_pin: GPIO5
-      motor_reverse_pin: GPIO17
-      motor_error_pin: GPIO4
-      motor_current_pin: GPIO39
-    #   temperature_sensor: remote_temperature
-  cover: !include
-    file: cover.yaml
-    vars:
-      endstop_current: 120 #Sets the current threshold that turns the endstops on
-      cover_open_pin: GPIO19
-      cover_close_pin: GPIO18
-      cover_current_pin: GPIO36
-  rain: !include
-    file: rain.yaml
-    vars:
-      rain_sensor_pin: GPIO2
-      rain_threshold: 300
-      rain_thermistor_pin: GPIO34
-      rain_heater_pin: GPIO13
-  control: !include
-    file: control.yaml
-    vars:
-      button_pin: GPIO21
-      rotary_pin_a: GPIO23
-      rotary_pin_b: GPIO22
+  display:
+    url: https://github.com/silverchris/opentasticfan
+    file: config/2.0/display.yaml
+
+  dallas:
+    url: https://github.com/silverchris/opentasticfan
+    file: config/2.0/temperature_dallas.yaml
+
+  climate:
+    url: https://github.com/silverchris/opentasticfan
+    file: config/2.0/climate.yaml
+
+  cover:
+    url: https://github.com/silverchris/opentasticfan
+    file: config/2.0/cover.yaml
+
+  rain:
+    url: https://github.com/silverchris/opentasticfan
+    file: config/2.0/rain.yaml
+
+  control:
+    url: https://github.com/silverchris/opentasticfan
+    file: config/2.0/control.yaml
+

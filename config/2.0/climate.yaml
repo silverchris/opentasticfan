@@ -1,5 +1,10 @@
 substitutions:
   temperature_sensor: local_temperature
+  motor_enable_pin: GPIO16
+  motor_forward_pin: GPIO5
+  motor_reverse_pin: GPIO17
+  motor_error_pin: GPIO4
+  motor_current_pin: GPIO39
 
 power_supply:
   - id: "motor_enable"

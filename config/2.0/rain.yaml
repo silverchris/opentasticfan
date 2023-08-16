@@ -1,3 +1,9 @@
+substitutions:
+  rain_sensor_pin: GPIO2
+  rain_threshold: "300" #Sets the touch threshold for rain detection. This may need to be tweeked depending on your wiring.
+  rain_thermistor_pin: GPIO34
+  rain_heater_pin: GPIO13
+
 switch:
   - platform: template
     id: rain_sensor_enable
