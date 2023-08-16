@@ -1,0 +1,176 @@
+substitutions:
+  temperature_sensor: local_temperature
+
+power_supply:
+  - id: "motor_enable"
+    pin: ${motor_enable_pin}
+
+output:
+  - platform: ledc
+    id: motor_forward_pin
+    frequency: 32kHz
+    pin: ${motor_forward_pin}
+    max_power: 0.99
+    min_power: 0.40
+    zero_means_zero: true
+    power_supply: motor_enable
+  - platform: ledc
+    id: motor_reverse_pin
+    pin: ${motor_reverse_pin}
+    frequency: 32kHz
+    max_power: 0.99
+    min_power: 0.40
+    zero_means_zero: true
+    power_supply: motor_enable
+  #Template Output for climate component, so only the enabled component can write to the motor output, and direction
+  - platform: template
+    id: climate_output
+    type: float
+    write_action:
+      - if:
+          condition:
+            - lambda: |-
+                return id(fan_mode).state == "AUTO";
+          then:
+            if:
+              condition:
+                - lambda: |-
+                    return id(fan_direction).state == "OUT";
+              then:
+                - output.set_level:
+                    id: motor_forward_pin
+                    level: !lambda return state;
+              else:
+                - output.set_level:
+                    id: motor_reverse_pin
+                    level: !lambda return state;
+  #Template Output for fan component, so only the enabled component can write to the motor output, and direction
+  - platform: template
+    id: fan_output
+    type: float
+    write_action:
+      - if:
+          condition:
+            - lambda: |-
+                return id(fan_mode).state == "MANUAL";
+          then:
+            if:
+              condition:
+                - lambda: |-
+                    return id(fan_direction).state == "OUT";
+              then:
+                - output.set_level:
+                    id: motor_forward_pin
+                    level: !lambda return state;
+              else:
+                - output.set_level:
+                    id: motor_reverse_pin
+                    level: !lambda return state;
+
+fan:
+  - platform: speed
+    id: my_fan
+    name: "Fan"
+    output: fan_output
+    on_turn_on:
+      - climate.control:
+          id: fan_climate
+          mode: "OFF"
+
+climate:
+  - platform: pid
+    name: "PID Climate Controller"
+    id: fan_climate
+    sensor: ${temperature_sensor}
+    default_target_temperature: 21°C
+    cool_output: climate_output
+    control_parameters:
+      kp: 1
+      ki: 3
+      kd: 0.2
+    deadband_parameters:
+      threshold_high: 0.5
+      threshold_low: 0.5
+
+select:
+  - platform: template
+    name: "Mode"
+    id: fan_mode
+    optimistic: true
+    restore_value: true
+    options:
+      - MANUAL
+      - AUTO
+    initial_option: AUTO
+    set_action:
+      if:
+        condition:
+          - lambda: |-
+              return id(fan_mode).state == "MANUAL";
+        then:
+          - climate.control:
+              id: fan_climate
+              mode: "OFF"
+        else:
+          - fan.turn_off: my_fan
+  - platform: template
+    name: "Direction"
+    id: fan_direction
+    optimistic: true
+    restore_value: true
+    options:
+      - IN
+      - OUT
+    initial_option: OUT
+    set_action:
+      if:
+        condition:
+          - lambda: |-
+              return id(fan_direction).state == "OUT";
+        then:
+          - output.set_level:
+              id: motor_forward_pin
+              level: 0
+          - if:
+              condition:
+                fan.is_on: my_fan
+              then:
+                - fan.turn_off: my_fan
+                - delay: 2s
+                - fan.turn_on: my_fan
+
+        else:
+          - output.set_level:
+              id: motor_reverse_pin
+              level: 0
+          - if:
+              condition:
+                fan.is_on: my_fan
+              then:
+                - fan.turn_off: my_fan
+                - delay: 2s
+                - fan.turn_on: my_fan
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: ${motor_error_pin}
+      inverted: true
+    name: "Motor Fault"
+    filters:
+      - delayed_on: 1s
+
+sensor:
+  - platform: adc
+    pin: ${motor_current_pin}
+    update_interval: 1s
+    attenuation: 0db
+    id: motor_current
+    name: Fan Current
+    filters:
+      - lambda: if(x>0.076){return (x/549.5)/0.000455;} else {return 0;} #ADC seems to have a minimum reading of 0.075V
+      - quantile:
+          window_size: 5
+          send_every: 5
+          send_first_at: 5
+    unit_of_measurement: "A"
