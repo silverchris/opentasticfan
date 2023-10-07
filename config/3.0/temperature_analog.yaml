@@ -1,0 +1,30 @@
+substitutions:
+  temperature_pin: GPIO4
+
+sensor:
+  - platform: resistance
+    sensor: air_thermistor_voltage
+    configuration: DOWNSTREAM
+    resistor: 51kOhm
+    id: air_thermistor_resistance
+    # reference_voltage: 3.12752V
+    internal: true
+  - platform: adc
+    id: air_thermistor_voltage
+    pin: ${temperature_pin}
+    update_interval: 1s
+    attenuation: auto
+    internal: true
+    filters:
+      - median:
+          window_size: 10
+          send_every: 10
+          send_first_at: 10
+  - platform: ntc
+    sensor: air_thermistor_resistance
+    calibration:
+      b_constant: 4160
+      reference_temperature: 25°C
+      reference_resistance: 100kOhm
+    name: "Air Temperature"
+    id: local_temperature

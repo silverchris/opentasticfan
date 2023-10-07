@@ -1,0 +1,107 @@
+substitutions:
+  rain_sensor_pin: GPIO10
+  rain_threshold: "300" #Sets the touch threshold for rain detection. This may need to be tweeked depending on your wiring.
+  rain_thermistor_pin: GPIO7
+  rain_heater_pin: GPIO3
+  rain_measurement_time: 1000us
+
+switch:
+  - platform: template
+    id: rain_sensor_enable
+    name: "Rain Sensor Enable"
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+
+select:
+  - platform: template
+    name: "Close Reason"
+    id: close_reason
+    optimistic: true
+    options:
+      - NONE
+      - BOOT
+      - RAIN
+      - COMMAND
+    initial_option: NONE
+
+esp32_touch:
+  setup_mode: true
+  measurement_duration: ${rain_measurement_time}
+
+binary_sensor:
+  - platform: esp32_touch
+    id: rain_sensor
+    name: "Rain Sensor"
+    pin: ${rain_sensor_pin}
+    threshold: ${rain_threshold}
+    device_class: moisture
+    icon: "mdi:weather-pouring"
+    filters:
+      - delayed_on_off: 5s
+    on_press:
+      then:
+        - if:
+            condition:
+              switch.is_on: rain_sensor_enable
+            then:
+              - cover.close: vent_lid
+              - logger.log:
+                  format: "Cover Closing due to Rain"
+                  level: INFO
+              - select.set:
+                  id: close_reason
+                  option: "RAIN"
+
+sensor:
+  - platform: resistance
+    sensor: rain_thermistor_voltage
+    configuration: DOWNSTREAM
+    resistor: 51kOhm
+    id: rain_thermistor_resistance
+    # reference_voltage: 3.12752V
+    internal: true
+  - platform: adc
+    id: rain_thermistor_voltage
+    pin: ${rain_thermistor_pin}
+    update_interval: 1s
+    attenuation: auto
+    internal: true
+    filters:
+      - median:
+          window_size: 10
+          send_every: 10
+          send_first_at: 10
+  - platform: ntc
+    sensor: rain_thermistor_resistance
+    calibration:
+      b_constant: 4160
+      reference_temperature: 25°C
+      reference_resistance: 100kOhm
+    name: NTC Temperature
+    id: rain_heater_temperature
+    internal: true
+
+output:
+  - platform: ledc
+    frequency: 60hz
+    id: rain_heater_output
+    pin:
+      number: ${rain_heater_pin}
+      drive_strength: 40mA
+      mode:
+        output: true
+
+# climate:
+#   - platform: pid
+#     name: "Dew Heater"
+#     id: dew_heater
+#     sensor: rain_heater_temperature
+#     default_target_temperature: 30C
+#     heat_output: rain_heater_output
+#     control_parameters:
+#       kp: 1
+#       ki: 3
+#       kd: 0.2
+#     deadband_parameters:
+#       threshold_high: 0.5
+#       threshold_low: 0.5

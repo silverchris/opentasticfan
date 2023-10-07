@@ -1,6 +1,6 @@
 substitutions:
-  i2c_sda_pin: GPIO25
-  i2c_scl_pin: GPIO26
+  i2c_sda_pin: GPIO35
+  i2c_scl_pin: GPIO36
 
 external_components:
   - source: github://pr#4105
@@ -24,7 +24,7 @@ display:
           }
           it.line(30, 0, 30, 64);
           it.print(43, 10, id(mdi_24), "\U000F050F");
-          it.printf(36, 34, id(roboto), "%.1f°C", id(remote_temperature).state);
+          it.printf(36, 34, id(roboto), "%.1f°C", id(local_temperature).state);
           it.line(83, 0, 83, 64);
           if(id(fan_mode).active_index() == 0){
             it.print(96, 10, id(mdi_24), "\U000F0210");
@@ -167,7 +167,7 @@ font:
         "\U00002715",
         "\U00002713",
       ]
-  - file: "gfonts://Material Icons"
+  - file: "gfonts://Material Icons" 
     id: mdi_24
     size: 24
     glyphs: [

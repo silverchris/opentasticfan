@@ -28,4 +28,4 @@ Opentasticfan uses [ESPHome](https://esphome.io). Configuration is located at [c
 ![OpentasticFan Wiring](media/wiring.jpg)
 
 ## OpentasticFan PCB
-![PCB](hardware/2.0/RV_Fan.png)
+![PCB](hardware/3.0/RV_Fan.png)

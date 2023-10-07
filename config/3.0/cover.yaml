@@ -1,0 +1,79 @@
+substitutions:
+  endstop_current: "120" #Sets the current threshold in mA that turns the endstops on
+  cover_open_pin: GPIO40
+  cover_close_pin: GPIO39
+  cover_current_pin: GPIO1
+  cover_enable_pin: GPIO38
+
+output:
+  - platform: gpio
+    pin: ${cover_close_pin}
+    id: cover_close
+  - platform: gpio
+    pin: ${cover_open_pin}
+    id: cover_open
+  - platform: gpio
+    pin: ${cover_enable_pin}
+    id: cover_enable
+
+sensor:
+  - platform: adc
+    pin: ${cover_current_pin}
+    update_interval: .1s
+    attenuation: 11db
+    id: cover_current
+    internal: true
+    filters:
+      - lambda: return ((x/24000)/0.000455)*1000;
+      - quantile:
+          window_size: 5
+          send_every: 5
+          send_first_at: 5
+      # - median:
+      #     window_size: 5
+      #     send_every: 5
+      #     send_first_at: 5
+    unit_of_measurement: "mA"
+
+binary_sensor:
+  - platform: analog_threshold
+    name: "Cover Close Endstop"
+    sensor_id: cover_current
+    threshold: ${endstop_current}
+    id: cover_close_endstop
+    filters:
+      - lambda: if(id(vent_lid).current_operation == CoverOperation::COVER_OPERATION_CLOSING) {return x;} else {return false;}
+      - delayed_on: 3s
+    internal: true
+  - platform: analog_threshold
+    name: "Cover Open Endstop"
+    sensor_id: cover_current
+    threshold: ${endstop_current}
+    id: cover_open_endstop
+    filters:
+      - lambda: if(id(vent_lid).current_operation == CoverOperation::COVER_OPERATION_OPENING) {return x;} else {return false;}
+      - delayed_on: 3s
+    internal: true
+
+cover:
+  - platform: endstop
+    name: "Cover"
+    id: vent_lid
+    open_action:
+      - output.turn_on: cover_enable
+      - output.turn_on: cover_open
+      - select.set:
+          id: close_reason
+          option: "NONE"
+    open_duration: 12s
+    open_endstop: cover_open_endstop
+    close_action:
+      - output.turn_on: cover_enable
+      - output.turn_on: cover_close
+    close_duration: 12s
+    close_endstop: cover_close_endstop
+    stop_action:
+      - output.turn_off: cover_open
+      - output.turn_off: cover_close
+      - output.turn_off: cover_enable
+    max_duration: 30s
