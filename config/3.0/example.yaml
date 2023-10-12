@@ -1,12 +1,12 @@
 substitutions:
-  name: "OpentasticFan"
+  device_name: "opentasticfan"
   friendly_name: "OpentasticFan"
   #   temperature_sensor: remote_temperature
   endstop_current: "120" #Sets the current threshold in mA that turns the endstops on. May need to be adjusted for different cover motors
   rain_threshold: "300" #Sets the touch threshold for rain detection. This may need to be tweeked depending on your wiring.
 
 esphome:
-  name: "${name}"
+  name: "${device_name}"
   friendly_name: "${friendly_name}"
   name_add_mac_suffix: true
 
@@ -26,19 +26,12 @@ esp32:
   board: dfrobot_firebeetle2_esp32s3
   variant: esp32s3
 wifi:
-  ssid:
-  password:
   ap:
     password: opentasticfan
 
 # Enable logging
 logger:
   level: DEBUG
-
-api:
-
-ota:
-  password: ""
 
 packages:
   display:
@@ -66,7 +59,7 @@ packages:
     file: config/3.0/control.yaml
 
 dashboard_import:
-  package_import_url: github://silverchris/opentasticfan/main/config/3.0/example.yaml@main
+  package_import_url: github://silverchris/opentasticfan/config/3.0/example.yaml@main
   import_full_config: true
 
 esp32_improv:
