@@ -33,6 +33,10 @@ wifi:
 logger:
   level: DEBUG
 
+api:
+
+ota:
+
 packages:
   display:
     url: https://github.com/silverchris/opentasticfan
@@ -60,7 +64,7 @@ packages:
 
 dashboard_import:
   package_import_url: github://silverchris/opentasticfan/config/3.0/example.yaml@main
-  import_full_config: true
+  import_full_config: false
 
 esp32_improv:
   authorizer: none
