@@ -2,11 +2,6 @@ substitutions:
   i2c_sda_pin: GPIO35
   i2c_scl_pin: GPIO36
 
-external_components:
-  - source: github://pr#4105
-    components:
-      [display_menu_base, graphical_display_menu, display, graph, font]
-
 i2c:
   scl: ${i2c_scl_pin}
   sda: ${i2c_sda_pin}
