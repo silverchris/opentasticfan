@@ -96,7 +96,7 @@ climate:
     name: "Dew Heater"
     id: dew_heater
     sensor: rain_heater_temperature
-    default_target_temperature: 30C
+    default_target_temperature: 40C
     heat_output: rain_heater_output
     control_parameters:
       kp: 1
